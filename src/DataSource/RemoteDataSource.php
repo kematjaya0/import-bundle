@@ -19,18 +19,6 @@ class RemoteDataSource extends AbstractDataSource
     
     /**
      *
-     * @var string
-     */
-    private $data_key;
-
-    /**
-     *
-     * @var int
-     */
-    private $row;
-    
-    /**
-     *
      * @var HttpClientInterface 
      */
     private $client;
@@ -88,27 +76,4 @@ class RemoteDataSource extends AbstractDataSource
         return $this;
     }
 
-    public function keyToProcess(): ?string 
-    {
-        return $this->data_key;
-    }
-
-    public function setKeyToProcess(string $key):self
-    {
-        $this->data_key = $key;
-        
-        return $this;
-    }
-    
-    public function startReadedRow(): ?int 
-    {
-        return $this->row;
-    }
-
-    public function setReadedRow(int $row):self
-    {
-        $this->row = $row;
-        
-        return $this;
-    }
 }
