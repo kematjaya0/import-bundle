@@ -24,3 +24,48 @@ public function import(ImportManagerInterface $importManager)
   $transformer = new YourTransformer();
   $manager->->process($source, $transformer);
 }
+```
+# data source
+```
+...
+use Kematjaya\ImportBundle\DataSource\RemoteDataSource;
+use Kematjaya\ImportBundle\DataSource\SpreadSheetDataSource;
+...
+...
+$remoteSource = new RemoteDataSource('https://jsonplaceholder.typicode.com/posts'); // from remote source
+$excelSource = new SpreadSheetDataSource('D://test.xlsx'); // from excel file
+...
+```
+# data transformer
+- create data transformer class
+```
+// src/DataTransformer/PostDataTransformer
+...
+use App\Entity\Post;
+use Kematjaya\ImportBundle\DataTransformer\AbstractDataTransformer;
+...
+
+class PostDataTrasnformer extends AbstractDataTransformer
+{
+  public function fromArray(array $data) 
+    {
+        $datas = $this->checkConstraints($data);
+        $entity = (new Post())
+                ->setId($datas['id'])
+                ->setUserId($datas['userId'])
+                ->setTitle($datas['title'])
+                ->setBody($datas['body']);
+        
+        return $entity;
+    }
+
+    protected function getColumns(): array 
+    {
+        return [
+            'id' => [
+                self::CONSTRAINT_REQUIRED => true
+            ]
+        ];
+    }
+}
+```
