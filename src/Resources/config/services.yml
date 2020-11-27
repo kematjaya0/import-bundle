@@ -4,4 +4,5 @@ services:
         autoconfigure: true
         public: false
 
-    Kematjaya\ImportBundle\Manager\ImportManagerInterface: ~
+    Kematjaya\ImportBundle\Manager\ImportManagerInterface:
+        class: Kematjaya\ImportBundle\Manager\ImportManager
