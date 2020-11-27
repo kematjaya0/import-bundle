@@ -62,8 +62,14 @@ class PostDataTrasnformer extends AbstractDataTransformer
     protected function getColumns(): array 
     {
         return [
-            'id' => [
-                self::CONSTRAINT_REQUIRED => true
+            [
+                self::KEY_FIELD => 'id', // key in TargetObject
+                self::KEY_INDEX => 0,    // key in array source
+                self::KEY_CONSTRAINT => [
+                    self::CONSTRAINT_REQUIRED => true // for required data
+                    self::CONSTRAINT_REFERENCE_CLASS => User::class // relation class
+                    self::CONSTRAINT_REFERENCE_FIELD => 'code' // field in reference class
+                ]
             ]
         ];
     }

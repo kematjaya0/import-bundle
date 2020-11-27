@@ -15,7 +15,11 @@ class ObjectSpreadsheetDataTrasnformerTest extends AbstractDataTransformer
     {
         return [
             [
-                self::CONSTRAINT_REQUIRED => true
+                self::KEY_FIELD => 'id',
+                self::KEY_INDEX => 0,
+                self::KEY_CONSTRAINT => [
+                    self::CONSTRAINT_REQUIRED => true
+                ]
             ]
         ];
     }

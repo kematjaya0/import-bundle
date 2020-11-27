@@ -26,8 +26,12 @@ class ObjectDataTrasnformerTest extends AbstractDataTransformer
     protected function getColumns(): array 
     {
         return [
-            'id' => [
-                self::CONSTRAINT_REQUIRED => true
+            [
+                self::KEY_FIELD => 'id',
+                self::KEY_INDEX => 'id',
+                self::KEY_CONSTRAINT => [
+                    self::CONSTRAINT_REQUIRED => true
+                ]
             ]
         ];
     }
