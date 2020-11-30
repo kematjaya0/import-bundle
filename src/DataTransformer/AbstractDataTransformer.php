@@ -4,6 +4,7 @@ namespace Kematjaya\ImportBundle\DataTransformer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use Symfony\Component\String\UnicodeString;
 use Kematjaya\ImportBundle\Exception\EmptyException;
 
 /**
@@ -87,6 +88,27 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
                 $referenceField = $constraints[self::CONSTRAINT_REFERENCE_FIELD];
                 
                 $class = $this->entityManager->getRepository($referenceClass)->findOneBy([$referenceField => $data[$index]]);
+                if(!$class)
+                {
+                    $uow = $this->entityManager->getUnitOfWork();
+                    $identityMap = $uow->getIdentityMap();
+                    if(isset($identityMap[$referenceClass]))
+                    {
+                        $field = $referenceField;
+                        $value = $data[$index];
+                        $u = new UnicodeString($field);
+                        $func = 'get' . $u->camel()->title();
+                        $obj = array_filter($identityMap[$referenceClass], function($object) use ($func, $value) {
+                            return $object->$func() == $value;
+                        });
+                        
+                        if(!empty($obj))
+                        {
+                            $class = end($obj);
+                        }
+                    }
+                }
+                
                 if($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE])
                 {
                     throw new Exception(sprintf('%s %s %s', $field, $data[$index], 'already exist'));
