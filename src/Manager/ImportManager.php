@@ -38,6 +38,10 @@ class ImportManager implements ImportManagerInterface
         });
     }
 
+    protected function isNull($input = array()):bool
+    {
+        return empty(array_filter($input, function ($a) { return $a !== null;}));
+    }
 
     public function process(AbstractDataSource $source, AbstractDataTransformer $transformer): Collection 
     {
@@ -63,6 +67,11 @@ class ImportManager implements ImportManagerInterface
             foreach($data as $k => $value)
             {
                 if($k < $start) continue;
+                
+                if($this->isNull($value))
+                {
+                    continue;
+                }
                 
                 $entity = $transformer->fromArray($value);
                 
