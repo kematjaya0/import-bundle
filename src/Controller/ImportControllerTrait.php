@@ -15,6 +15,10 @@ use Doctrine\Common\Collections\Collection;
  */
 trait ImportControllerTrait 
 {
+    /**
+     * 
+     * @var ImportManagerInterface
+     */
     protected $importManager;
     
     protected function setImportManager(ImportManagerInterface $importManager):void
@@ -38,7 +42,7 @@ trait ImportControllerTrait
                                 
                         $resultsets = $this->importManager->process($source, $transformer);
                         
-                        return $this->buildImportSuccessResult($resultSets);
+                        return $this->buildImportSuccessResult($resultsets);
                     } catch (\Exception $ex) {
                         return $this->buildImportErrorResult($ex->getMessage());
                     }
@@ -63,12 +67,12 @@ trait ImportControllerTrait
         ];
     }
     
-    protected function buildImportSuccessResult(Collection $resultSets)
+    protected function buildImportSuccessResult(Collection $resultsets)
     {
         return [
             "process" => true, 
             "status" => true, 
             "errors" => null, 
-            "message" => sprintf('import successfull (%s data)', $resultSets->count())];
+            "message" => sprintf('import successfull (%s data)', $resultsets->count())];
     }
 }
