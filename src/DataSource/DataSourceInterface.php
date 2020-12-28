@@ -5,7 +5,7 @@ namespace Kematjaya\ImportBundle\DataSource;
 /**
  * @author Nur Hidayatullah <kematjaya0@gmail.com>
  */
-interface DataSourceInterface 
+interface DataSourceInterface
 {
     public function startReadedRow():?int;
     

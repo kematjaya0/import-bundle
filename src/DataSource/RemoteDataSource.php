@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file is part of Kematjaya\ImportBundle
+ */
+
 namespace Kematjaya\ImportBundle\DataSource;
 
 use Symfony\Component\HttpClient\CurlHttpClient;
@@ -7,7 +11,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Exception;
 
 /**
- * @author Nur Hidayatullah <kematjaya0@gmail.com>
+ * Processing from URL (json) to array data
+ * 
+ * @category Kematjaya\ImportBundle
+ * @package  Kematjaya\ImportBundle\Manager
+ * @license  https://opensource.org/licenses/MIT MIT
+ * @author   Nur Hidayatullah <kematjaya0@gmail.com>
  */
 class RemoteDataSource extends AbstractDataSource
 {
@@ -35,18 +44,35 @@ class RemoteDataSource extends AbstractDataSource
         $this->client = $client ? $client : new CurlHttpClient();
     }
 
+    /**
+     * Get request method
+     * 
+     * @return string
+     */
     function getMethod(): string 
     {
         return $this->method;
     }
 
+    /**
+     * Set request method
+     * 
+     * @param  string $method
+     * @return self
+     */
     function setMethod(string $method): self 
     {
         $this->method = $method;
         
         return $this;
     }
-
+    
+    /**
+     * Execution from remote source to array
+     * 
+     * @return array
+     * @throws Exception
+     */
     public function execute(): array 
     {
         $resultset = [];
@@ -64,11 +90,22 @@ class RemoteDataSource extends AbstractDataSource
         return $resultset;
     }
 
+    /**
+     * Get HTTP Client object
+     * 
+     * @return HttpClientInterface
+     */
     function getClient(): HttpClientInterface 
     {
         return $this->client;
     }
 
+    /**
+     * Set HTTP Client object
+     * 
+     * @param  HttpClientInterface $client
+     * @return self
+     */
     function setClient(HttpClientInterface $client): self 
     {
         $this->client = $client;

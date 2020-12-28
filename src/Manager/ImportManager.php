@@ -1,15 +1,27 @@
 <?php
 
+/**
+ * This file is part of Kematjaya\ImportBundle
+ */
+
 namespace Kematjaya\ImportBundle\Manager;
 
+use Kematjaya\ImportBundle\Exception\KeyNotFoundException;
 use Kematjaya\ImportBundle\DataSource\AbstractDataSource;
 use Kematjaya\ImportBundle\DataTransformer\AbstractDataTransformer;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Exception;
+
+
 /**
- * @author Nur Hidayatullah <kematjaya0@gmail.com>
+ * Implements class for handling import data
+ *
+ * @category Kematjaya\ImportBundle
+ * @package  Kematjaya\ImportBundle\Manager
+ * @license  https://opensource.org/licenses/MIT MIT
+ * @author   Nur Hidayatullah <kematjaya0@gmail.com>
  */
 class ImportManager implements ImportManagerInterface
 {
@@ -17,78 +29,66 @@ class ImportManager implements ImportManagerInterface
      *
      * @var EntityManagerInterface 
      */
-    private $entityManager;
+    private $_entityManager;
     
+    
+    /**
+     * 
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager) 
     {
-        $this->entityManager = $entityManager;
+        $this->_entityManager = $entityManager;
     }
     
+    /**
+     * Getting entity manager object
+     * 
+     * @return EntityManagerInterface
+     */
     public function getEntityManager():EntityManagerInterface
     {
-        return $this->entityManager;
+        return $this->_entityManager;
     }
     
-    protected function save(&$object, EntityManagerInterface $entityManager)
-    {
-        $entityManager->transactional(function (EntityManagerInterface $em) use ($object) {
-            
-            $em->persist($object);
-            
-        });
-    }
-
-    protected function isNull($input = array()):bool
-    {
-        return empty(array_filter($input, function ($a) { return $a !== null;}));
-    }
-
+    /**
+     * Function for process supported data to any output formatted
+     *
+     * @param  AbstractDataSource      $source      the source data
+     * @param  AbstractDataTransformer $transformer transformer class for handle data from input format to data format
+     * @return Collection 
+     * @throws Exception
+     */
     public function process(AbstractDataSource $source, AbstractDataTransformer $transformer): Collection 
     {
-        $this->entityManager->beginTransaction();
+        $entityManager = $this->getEntityManager();
+        $entityManager->beginTransaction();
         try{
-            
-            $resultSet = $source->execute();
-            
-            $data = $resultSet;
-            if($source->keyToProcess())
-            {
-                if(!isset($resultSet[$source->keyToProcess()]))
-                {
-                    throw new Exception('cannot find key : '. $source->keyToProcess());
-                }
-                
-                $data = $resultSet[$source->keyToProcess()];
-            }
+            $data = $this->getSourceData($source);
             
             $start = $source->startReadedRow() ? $source->startReadedRow() : 0;
-            
             $objects = new ArrayCollection();
-            foreach($data as $k => $value)
-            {
-                if($k < $start) continue;
+            foreach ($data as $k => $value) {
+                if ($k < $start) {
+                    continue;
+                }
                 
-                if($this->isNull($value))
-                {
+                if ($this->isNull($value)) {
                     continue;
                 }
                 
                 $entity = $transformer->fromArray($value);
-                
-                $this->save($entity, $this->entityManager);
-                
+                $this->save($entity, $entityManager);
                 $objects->add($entity);
             }
             
-            $this->entityManager->flush();
-            
-            $this->entityManager->commit();
+            $entityManager->flush();
+            $entityManager->commit();
             
             return $objects;
             
-        } catch (Exception $ex) 
-        {
-            $this->entityManager->rollback();
+        } catch (Exception $ex) {
+            $entityManager->rollback();
             
             throw $ex;
         }
@@ -96,4 +96,59 @@ class ImportManager implements ImportManagerInterface
         return new ArrayCollection();
     }
 
+    /**
+     * Persisted data to database
+     *
+     * @param type                   $object
+     * @param EntityManagerInterface $entityManager
+     */
+    protected function save(&$object, EntityManagerInterface $entityManager)
+    {
+        $entityManager->transactional(
+            function (EntityManagerInterface $em) use ($object) {
+            
+                $em->persist($object);
+            
+            }
+        );
+    }
+
+    /**
+     * Checking array is null or not
+     * 
+     * @param  array $input
+     * @return bool
+     */
+    protected function isNull(array $input = array()):bool
+    {
+        return empty(
+            array_filter(
+                $input, function ($a) {
+                    return $a !== null;
+                }
+            )
+        );
+    }
+    
+    /**
+     * Get data from source
+     * 
+     * @param  AbstractDataSource $source
+     * @return array set of data
+     * @throws KeyNotFoundException when cannot find key to process
+     */
+    protected function getSourceData(AbstractDataSource $source):array
+    {
+        $resultSet = $source->execute();
+        $data = $resultSet;
+        if ($source->keyToProcess()) {
+            if (!isset($resultSet[$source->keyToProcess()])) {
+                throw new KeyNotFoundException($source->keyToProcess());
+            }
+
+            $data = $resultSet[$source->keyToProcess()];
+        }
+        
+        return $data;
+    }
 }

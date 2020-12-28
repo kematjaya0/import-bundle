@@ -10,7 +10,7 @@ use Symfony\Component\DependencyInjection\Extension\Extension;
 /**
  * @author Nur Hidayatullah <kematjaya0@gmail.com>
  */
-class ImportExtension extends Extension 
+class ImportExtension extends Extension
 {
     
     public function load(array $configs, ContainerBuilder $container) 

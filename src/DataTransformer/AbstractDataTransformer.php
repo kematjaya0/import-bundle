@@ -8,7 +8,10 @@ use Symfony\Component\String\UnicodeString;
 use Kematjaya\ImportBundle\Exception\EmptyException;
 
 /**
- * @author Nur Hidayatullah <kematjaya0@gmail.com>
+ * @category Kematjaya\ImportBundle
+ * @package  Kematjaya\ImportBundle\Manager
+ * @license  https://opensource.org/licenses/MIT MIT
+ * @author   Nur Hidayatullah <kematjaya0@gmail.com>
  */
 abstract class AbstractDataTransformer implements DataTransformerInterface
 {
@@ -18,50 +21,36 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
      */
     protected $entityManager;
     
+    /**
+     * 
+     * @param EntityManagerInterface $entityManager
+     */
     public function __construct(EntityManagerInterface $entityManager) 
     {
         $this->entityManager = $entityManager;
     }
     
-    abstract protected function getColumns():array;
-    
-    protected function buildException(array $data = [], string $exceptionClass = null):Exception
-    {
-        $message = !empty($data) ? implode(" ", $data) : "";
-        
-        return ($exceptionClass) ? new $exceptionClass($message) : new Exception($message);
-    }
-    
-    protected function dataCast($value, string $type = null)
-    {
-        switch($type)
-        {
-            case self::CONSTRAINT_TYPE_NUMBER:
-                return (float) $value;
-                break;
-            default:
-                break;
-        }
-        
-        return $value;
-    }
-    
+    /**
+     * Parsing data from source to target formated data
+     * 
+     * @param  array $data
+     * @return array
+     * @throws EmptyException
+     * @throws Exception
+     */
     protected function checkConstraints(array $data):array
     {
-        if(empty($data))
-        {
+        if (empty($data)) {
             throw new EmptyException();
         }
         
         $columns = $this->getColumns();
-        foreach($columns as $k => $v)
-        {
-            if(!isset($v[self::KEY_FIELD]))
-            {
+        foreach ($columns as $k => $v) {
+            if (!isset($v[self::KEY_FIELD])) {
                 throw new Exception(sprintf('required key: %s', self::KEY_FIELD));
             }
-            if(!isset($v[self::KEY_INDEX]))
-            {
+            
+            if (!isset($v[self::KEY_INDEX])) {
                 throw new Exception(sprintf('required key: %s', self::KEY_INDEX));
             }
             
@@ -72,15 +61,12 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             
             $constraints = (isset($v[self::KEY_CONSTRAINT])) ? $v[self::KEY_CONSTRAINT] : [];
             
-            if(isset($constraints[self::CONSTRAINT_REQUIRED]) and $constraints[self::CONSTRAINT_REQUIRED] and !$data[$index])
-            {
+            if (isset($constraints[self::CONSTRAINT_REQUIRED]) and $constraints[self::CONSTRAINT_REQUIRED] and !$data[$index]) {
                 throw new Exception(sprintf('%s %s %s', 'column', $field, self::CONSTRAINT_REQUIRED));
             }
             
-            if(isset($constraints[self::CONSTRAINT_REFERENCE_CLASS]))
-            {
-                if(!isset($constraints[self::CONSTRAINT_REFERENCE_FIELD]))
-                {
+            if (isset($constraints[self::CONSTRAINT_REFERENCE_CLASS])) {
+                if (!isset($constraints[self::CONSTRAINT_REFERENCE_FIELD])) {
                     throw new Exception(sprintf('required "%s" constraint key', self::CONSTRAINT_REFERENCE_FIELD));
                 }
                 
@@ -88,29 +74,27 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
                 $referenceField = $constraints[self::CONSTRAINT_REFERENCE_FIELD];
                 
                 $class = $this->entityManager->getRepository($referenceClass)->findOneBy([$referenceField => $data[$index]]);
-                if(!$class)
-                {
+                if (!$class) {
                     $uow = $this->entityManager->getUnitOfWork();
                     $identityMap = $uow->getIdentityMap();
-                    if(isset($identityMap[$referenceClass]))
-                    {
+                    if (isset($identityMap[$referenceClass])) {
                         $field = $referenceField;
                         $value = $data[$index];
                         $u = new UnicodeString($field);
                         $func = 'get' . $u->camel()->title();
-                        $obj = array_filter($identityMap[$referenceClass], function($object) use ($func, $value) {
-                            return $object->$func() == $value;
-                        });
+                        $obj = array_filter(
+                            $identityMap[$referenceClass], function ($object) use ($func, $value) {
+                                return $object->$func() == $value;
+                            }
+                        );
                         
-                        if(!empty($obj))
-                        {
+                        if(!empty($obj)) {
                             $class = end($obj);
                         }
                     }
                 }
                 
-                if($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE])
-                {
+                if ($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE]) {
                     throw new Exception(sprintf('%s %s %s', $field, $data[$index], 'already exist'));
                 }
                 
@@ -118,40 +102,49 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             }
         }
         
-        /*$columns = $this->getColumns();
-        foreach($columns as $k => $v)
-        {
-            if(!isset($data[$k]))
-            {
-                throw $this->buildException(['undefined key:', $k]);
-            }
-            
-            if(isset($v[self::CONSTRAINT_REQUIRED]) and $v[self::CONSTRAINT_REQUIRED] and !$data[$k])
-            {
-                throw $this->buildException(['column', $k, self::CONSTRAINT_REQUIRED]);
-            }
-            
-            if(isset($v[self::CONSTRAINT_REFERENCE_CLASS]))
-            {
-                if(!isset($v[self::CONSTRAINT_REFERENCE_FIELD]))
-                {
-                    throw $this->buildException([self::CONSTRAINT_REFERENCE_COLUMN, 'required']);
-                }
-                
-                $referenceClass = $v[self::CONSTRAINT_REFERENCE_CLASS];
-                $referenceColumn = $v[self::CONSTRAINT_REFERENCE_FIELD];
-                $class = $this->entityManager->getRepository($referenceClass)->findOneBy([$referenceColumn => $data[$k]]);
-                if($class and isset($v[self::CONSTRAINT_UNIQUE]) and $v[self::CONSTRAINT_UNIQUE])
-                {
-                    throw $this->buildException([$k, $data[$k], 'already_exist']);
-                }
-                
-                $data[$k] = ($class) ? $class : $data[$k];
-            }
-            
-            $k++;
-        }*/
-        
         return $data;
+    }
+    
+    abstract protected function getColumns():array;
+    
+    /**
+     * Build Exception return
+     * 
+     * @param  array  $data
+     * @param  string $exceptionClass
+     * @return Exception
+     */
+    protected function buildException(array $data = [], string $exceptionClass = null):Exception
+    {
+        $message = !empty($data) ? implode(" ", $data) : "";
+        
+        return ($exceptionClass) ? new $exceptionClass($message) : new Exception($message);
+    }
+    
+    /**
+     * Casting from data to specific type
+     * 
+     * @param  mixed  $value
+     * @param  string $type
+     * @return mixed
+     */
+    protected function dataCast($value, string $type = null)
+    {
+        switch($type)
+        {
+        case self::CONSTRAINT_TYPE_NUMBER:
+            return (float) $value;
+                break;
+        case self::CONSTRAINT_TYPE_STRING:
+            return (string) $value;
+        case self::CONSTRAINT_TYPE_BOOLEAN:
+            return (bool) $value;
+        case self::CONSTRAINT_TYPE_ARRAY:
+            return is_array($value) ? $value : [$value];
+        default:
+            break;
+        }
+        
+        return $value;
     }
 }
