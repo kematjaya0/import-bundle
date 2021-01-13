@@ -58,7 +58,7 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             $field  = $v[self::KEY_FIELD];
             $index  = $v[self::KEY_INDEX];
             $type   = (isset($v[self::KEY_TYPE])) ? $v[self::KEY_TYPE] : null;
-            $data[$index] = $this->dataCast($data[$index], $type);
+            $data[$index] = isset($data[$index]) ? $this->dataCast($data[$index], $type):null;
             
             $constraints = (isset($v[self::KEY_CONSTRAINT])) ? $v[self::KEY_CONSTRAINT] : [];
             
@@ -99,8 +99,12 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
      * @param  string $type
      * @return mixed
      */
-    protected function dataCast($value, string $type = null)
+    protected function dataCast($value = null, string $type = null)
     {
+        if (null === $value) {
+            return $value;
+        }
+        
         switch($type)
         {
             case self::CONSTRAINT_TYPE_NUMBER:
