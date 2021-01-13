@@ -4,6 +4,7 @@ namespace Kematjaya\ImportBundle\DataTransformer;
 
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
+use DateTime;
 use Symfony\Component\String\UnicodeString;
 use Kematjaya\ImportBundle\Exception\EmptyException;
 
@@ -45,7 +46,7 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
         }
         
         $columns = $this->getColumns();
-        foreach ($columns as $k => $v) {
+        foreach ($columns as $v) {
             if (!isset($v[self::KEY_FIELD])) {
                 throw new Exception(sprintf('required key: %s', self::KEY_FIELD));
             }
@@ -66,38 +67,8 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             }
             
             if (isset($constraints[self::CONSTRAINT_REFERENCE_CLASS])) {
-                if (!isset($constraints[self::CONSTRAINT_REFERENCE_FIELD])) {
-                    throw new Exception(sprintf('required "%s" constraint key', self::CONSTRAINT_REFERENCE_FIELD));
-                }
                 
-                $referenceClass = $constraints[self::CONSTRAINT_REFERENCE_CLASS];
-                $referenceField = $constraints[self::CONSTRAINT_REFERENCE_FIELD];
-                
-                $class = $this->entityManager->getRepository($referenceClass)->findOneBy([$referenceField => $data[$index]]);
-                if (!$class) {
-                    $uow = $this->entityManager->getUnitOfWork();
-                    $identityMap = $uow->getIdentityMap();
-                    if (isset($identityMap[$referenceClass])) {
-                        $field = $referenceField;
-                        $value = $data[$index];
-                        $u = new UnicodeString($field);
-                        $func = 'get' . $u->camel()->title();
-                        $obj = array_filter(
-                            $identityMap[$referenceClass], function ($object) use ($func, $value) {
-                                return $object->$func() == $value;
-                            }
-                        );
-                        
-                        if(!empty($obj)) {
-                            $class = end($obj);
-                        }
-                    }
-                }
-                
-                if ($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE]) {
-                    throw new Exception(sprintf('%s %s %s', $field, $data[$index], 'already exist'));
-                }
-                
+                $class = $this->getEntityValue($data[$index], $constraints);
                 $data[$index] = ($class) ? $class : $data[$index];
             }
         }
@@ -132,19 +103,71 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
     {
         switch($type)
         {
-        case self::CONSTRAINT_TYPE_NUMBER:
-            return (float) $value;
+            case self::CONSTRAINT_TYPE_NUMBER:
+                return (float) $value;
+                    break;
+            case self::CONSTRAINT_TYPE_STRING:
+                return (string) $value;
+            case self::CONSTRAINT_TYPE_BOOLEAN:
+                return (bool) $value;
+            case self::CONSTRAINT_TYPE_ARRAY:
+                return is_array($value) ? $value : [$value];
+            case self::CONSTRAINT_TYPE_DATE:
+                $date = DateTime::createFromFormat('Y-m-d', $value);
+                if (false === $date) {
+                    throw new Exception(sprintf('invalid date format "%s", available: %s', $value, 'Y-m-d'));
+                }
+                
+                return $date;
+            default:
                 break;
-        case self::CONSTRAINT_TYPE_STRING:
-            return (string) $value;
-        case self::CONSTRAINT_TYPE_BOOLEAN:
-            return (bool) $value;
-        case self::CONSTRAINT_TYPE_ARRAY:
-            return is_array($value) ? $value : [$value];
-        default:
-            break;
         }
         
         return $value;
+    }
+    
+    /**
+     * 
+     * @param string $data
+     * @param array $constraints
+     * @return mixed object of entity
+     * @throws Exception
+     */
+    protected function getEntityValue(string $data, array $constraints)
+    {
+        if (!isset($constraints[self::CONSTRAINT_REFERENCE_FIELD])) {
+            throw new Exception(sprintf('required "%s" constraint key', self::CONSTRAINT_REFERENCE_FIELD));
+        }
+           
+        $referenceClass = $constraints[self::CONSTRAINT_REFERENCE_CLASS];
+        $referenceField = $constraints[self::CONSTRAINT_REFERENCE_FIELD];
+        
+        $class = $this->entityManager->getRepository($referenceClass)->findOneBy([$referenceField => $data]);
+        if ($class) {
+            return $class;
+        }  
+        
+        $uow = $this->entityManager->getUnitOfWork();
+        $identityMap = $uow->getIdentityMap();
+        if (isset($identityMap[$referenceClass])) {
+            $field = $referenceField;
+            $u = new UnicodeString($field);
+            $func = 'get' . $u->camel()->title();
+            $obj = array_filter(
+                $identityMap[$referenceClass], function ($object) use ($func, $data) {
+                    return $object->$func() == $data;
+                }
+            );
+
+            if(!empty($obj)) {
+                $class = end($obj);
+            }
+        }
+        
+        if ($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE]) {
+            throw new Exception(sprintf('%s %s %s', $field, $data, 'already exist'));
+        }
+        
+        return $class;
     }
 }

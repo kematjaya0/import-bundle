@@ -16,6 +16,7 @@ interface DataTransformerInterface
     const CONSTRAINT_TYPE_STRING        = 'string';
     const CONSTRAINT_TYPE_ARRAY         = 'array';
     const CONSTRAINT_TYPE_BOOLEAN       = 'boolean';
+    const CONSTRAINT_TYPE_DATE          = 'date';
     
     const KEY_INDEX           = 'index';
     const KEY_CONSTRAINT      = 'constraint';
