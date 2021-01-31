@@ -24,7 +24,7 @@
         "phpstan/phpstan": "^0.12.64"
     },
     "require": {
-        "doctrine/common": "^3.0|^2.0",
+        "doctrine/collections": "^1.6",
         "doctrine/orm": "^2.7",
         "symfony/http-client": "^4.0|^5.0",
         "symfony/http-kernel": "^4.0|^5.0",
