@@ -49,7 +49,7 @@ class RemoteDataSource extends AbstractDataSource
      * 
      * @return string
      */
-    function getMethod(): string 
+    public function getMethod(): string 
     {
         return $this->method;
     }
@@ -60,7 +60,7 @@ class RemoteDataSource extends AbstractDataSource
      * @param  string $method
      * @return self
      */
-    function setMethod(string $method): self 
+    public function setMethod(string $method): self 
     {
         $this->method = $method;
         
@@ -95,7 +95,7 @@ class RemoteDataSource extends AbstractDataSource
      * 
      * @return HttpClientInterface
      */
-    function getClient(): HttpClientInterface 
+    public function getClient(): HttpClientInterface 
     {
         return $this->client;
     }
@@ -106,11 +106,18 @@ class RemoteDataSource extends AbstractDataSource
      * @param  HttpClientInterface $client
      * @return self
      */
-    function setClient(HttpClientInterface $client): self 
+    public function setClient(HttpClientInterface $client): self 
     {
         $this->client = $client;
         
         return $this;
     }
+    
+    function getUrl(): string 
+    {
+        return $this->url;
+    }
+
+
 
 }
