@@ -151,6 +151,14 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             return $class;
         }  
         
+        return $this->findInUnitOfWork($data, $referenceClass, $referenceField);
+//        if ($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE]) {
+//            throw new Exception(sprintf('%s %s %s', $referenceField, $data, 'already exist'));
+//        }
+    }
+    
+    protected function findInUnitOfWork(string $data, string $referenceClass, string $referenceField)
+    {
         $uow = $this->entityManager->getUnitOfWork();
         $identityMap = $uow->getIdentityMap();
         if (isset($identityMap[$referenceClass])) {
@@ -164,14 +172,31 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             );
 
             if(!empty($obj)) {
-                $class = end($obj);
+                return end($obj);
             }
         }
         
-        if ($class and isset($constraints[self::CONSTRAINT_UNIQUE]) and $constraints[self::CONSTRAINT_UNIQUE]) {
-            throw new Exception(sprintf('%s %s %s', $field, $data, 'already exist'));
+        $schedules = $this->entityManager->getUnitOfWork()->getScheduledEntityInsertions();
+        if (empty($schedules)) {
+            
+            return null;
         }
         
-        return $class;
+        
+        $objects = array_filter($schedules, function ($object) use ($referenceClass, $referenceField, $data) {
+            $u = new UnicodeString($referenceField);
+            $func = 'get' . $u->camel()->title();
+            if (!$object instanceof $referenceClass) {
+                return false;
+            }
+            
+            return $object->$func() == $data;
+        });
+        
+        if(!empty($objects)) {
+            return end($objects);
+        }
+        
+        return null;
     }
 }
