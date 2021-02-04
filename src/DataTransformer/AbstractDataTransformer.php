@@ -31,6 +31,11 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
         $this->entityManager = $entityManager;
     }
     
+    protected function skippedKeys():array
+    {
+        return [];
+    }
+    
     /**
      * Parsing data from source to target formated data
      * 
@@ -42,31 +47,46 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
     protected function checkConstraints(array $data):array
     {
         if (empty($data)) {
+            
             throw new EmptyException();
         }
         
         $columns = $this->getColumns();
         foreach ($columns as $v) {
             if (!isset($v[self::KEY_FIELD])) {
+                
                 throw new Exception(sprintf('required key: %s', self::KEY_FIELD));
             }
             
             if (!isset($v[self::KEY_INDEX])) {
+                
                 throw new Exception(sprintf('required key: %s', self::KEY_INDEX));
             }
             
             $field  = $v[self::KEY_FIELD];
             $index  = $v[self::KEY_INDEX];
+            $skippedKey = $this->skippedKeys();
+            if (in_array($index, $skippedKey) and !isset($data[$index])) {
+                
+                continue;
+            }
+            
             $type   = (isset($v[self::KEY_TYPE])) ? $v[self::KEY_TYPE] : null;
             $data[$index] = isset($data[$index]) ? $this->dataCast($data[$index], $type):null;
             
-            $constraints = (isset($v[self::KEY_CONSTRAINT])) ? $v[self::KEY_CONSTRAINT] : [];
+            $constraints = $this->getConstraints($v);
             
-            if (isset($constraints[self::CONSTRAINT_REQUIRED]) and $constraints[self::CONSTRAINT_REQUIRED] and !$data[$index]) {
+            if ($this->isRequired($constraints) and (!isset($data[$index]) or !$data[$index])) {
+                
                 throw new Exception(sprintf('%s %s %s', 'column', $field, self::CONSTRAINT_REQUIRED));
             }
             
-            if (isset($constraints[self::CONSTRAINT_REFERENCE_CLASS])) {
+            if ($this->hasReferenceClass($constraints)) {
+                if (!is_scalar($data[$index])) {
+                    $data[$index] = null;
+                    
+                    return $data;
+                }
                 
                 $class = $this->getEntityValue($data[$index], $constraints);
                 $data[$index] = ($class) ? $class : $data[$index];
@@ -74,6 +94,21 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
         }
         
         return $data;
+    }
+    
+    protected function isRequired(array $constraints):bool
+    {
+        return isset($constraints[self::CONSTRAINT_REQUIRED]) and $constraints[self::CONSTRAINT_REQUIRED];
+    }
+    
+    protected function getConstraints(array $data):array
+    {
+        return (isset($data[self::KEY_CONSTRAINT])) ? $data[self::KEY_CONSTRAINT] : [];
+    }
+    
+    protected function hasReferenceClass(array $constraints = []):bool
+    {
+        return isset($constraints[self::CONSTRAINT_REFERENCE_CLASS]);
     }
     
     abstract protected function getColumns():array;
@@ -102,14 +137,13 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
     protected function dataCast($value = null, string $type = null)
     {
         if (null === $value) {
+            
             return $value;
         }
         
-        switch($type)
-        {
+        switch ($type) {
             case self::CONSTRAINT_TYPE_NUMBER:
                 return (float) $value;
-                    break;
             case self::CONSTRAINT_TYPE_STRING:
                 return (string) $value;
             case self::CONSTRAINT_TYPE_BOOLEAN:
@@ -119,6 +153,7 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             case self::CONSTRAINT_TYPE_DATE:
                 $date = DateTime::createFromFormat('Y-m-d', $value);
                 if (false === $date) {
+                    
                     throw new Exception(sprintf('invalid date format "%s", available: %s', $value, 'Y-m-d'));
                 }
                 
