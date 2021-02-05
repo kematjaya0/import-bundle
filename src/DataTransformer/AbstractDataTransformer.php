@@ -140,7 +140,7 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             
             return $value;
         }
-        
+        new \DateTime();
         switch ($type) {
             case self::CONSTRAINT_TYPE_NUMBER:
                 return (float) $value;
@@ -151,11 +151,22 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             case self::CONSTRAINT_TYPE_ARRAY:
                 return is_array($value) ? $value : [$value];
             case self::CONSTRAINT_TYPE_DATE:
-                $date = DateTime::createFromFormat('Y-m-d', $value);
-                if (false === $date) {
-                    
-                    throw new Exception(sprintf('invalid date format "%s", available: %s', $value, 'Y-m-d'));
+                $formats = ['Y-m-d H:i:s.v', 'Y-m-d H:i:s', 'Y-m-d'];
+                $loop = true; $date = false;
+                foreach ($formats as $format) {
+                    if (!$loop) {
+                        break;
+                    }
+                    $date = DateTime::createFromFormat($format, $value);
+                    if (false !== $date) {
+                        $loop = false;
+                    }
                 }
+                
+                if (false === $date) {
+                    $date = new \DateTime($value);
+                }
+                    
                 
                 return $date;
             default:
@@ -183,6 +194,7 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
         
         $class = $this->entityManager->getRepository($referenceClass)->findOneBy([$referenceField => $data]);
         if ($class) {
+            
             return $class;
         }  
         
@@ -205,8 +217,9 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
                     return $object->$func() == $data;
                 }
             );
-
-            if(!empty($obj)) {
+            
+            if (!empty($obj)) {
+                
                 return end($obj);
             }
         }
