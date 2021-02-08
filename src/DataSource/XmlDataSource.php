@@ -6,6 +6,8 @@
 
 namespace Kematjaya\ImportBundle\DataSource;
 
+use Exception;
+
 /**
  * @package Kematjaya\ImportBundle\DataSource
  * @license https://opensource.org/licenses/MIT MIT
