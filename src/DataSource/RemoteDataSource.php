@@ -82,7 +82,9 @@ class RemoteDataSource extends AbstractDataSource
                 $this->url
             );
             
-            return json_decode($response->getContent(), true);
+            $resultSet = json_decode($response->getContent(), true);
+            
+            return is_array($resultSet) ? $resultSet : [];
         } catch (Exception $ex) {
             throw $ex;
         }
