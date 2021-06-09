@@ -85,7 +85,7 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
                 if (!is_scalar($data[$index])) {
                     $data[$index] = null;
                     
-                    return $data;
+                    continue;
                 }
                 
                 $class = $this->getEntityValue($data[$index], $constraints);
