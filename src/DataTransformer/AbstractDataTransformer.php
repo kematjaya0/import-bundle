@@ -151,6 +151,11 @@ abstract class AbstractDataTransformer implements DataTransformerInterface
             case self::CONSTRAINT_TYPE_ARRAY:
                 return is_array($value) ? $value : [$value];
             case self::CONSTRAINT_TYPE_DATE:
+                if (is_numeric($value)) {
+                    
+                    return null;
+                }
+                
                 $formats = ['Y-m-d H:i:s.v', 'Y-m-d H:i:s', 'Y-m-d'];
                 $loop = true; $date = false;
                 foreach ($formats as $format) {
