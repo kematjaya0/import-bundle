@@ -59,12 +59,12 @@ class ImportManager implements ImportManagerInterface
      * @return Collection 
      * @throws Exception
      */
-    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer): Collection 
+    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = []): Collection 
     {
         $entityManager = $this->getEntityManager();
         $entityManager->beginTransaction();
         try{
-            $data = $this->getSourceData($source);
+            $data = $this->getSourceData($source, $options);
             
             $start = $source->startReadedRow() ? $source->startReadedRow() : 0;
             $objects = new ArrayCollection();
@@ -137,9 +137,9 @@ class ImportManager implements ImportManagerInterface
      * @return array set of data
      * @throws KeyNotFoundException when cannot find key to process
      */
-    protected function getSourceData(AbstractDataSource $source):array
+    protected function getSourceData(AbstractDataSource $source, array $options = []):array
     {
-        $resultSet = $source->execute();
+        $resultSet = $source->execute($options);
         $data = $resultSet;
         if ($source->keyToProcess()) {
             if (!isset($resultSet[$source->keyToProcess()])) {

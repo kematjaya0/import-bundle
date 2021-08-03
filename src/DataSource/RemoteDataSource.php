@@ -73,13 +73,14 @@ class RemoteDataSource extends AbstractDataSource
      * @return array
      * @throws Exception
      */
-    public function execute(): array 
+    public function execute(array $options = []): array 
     {
         $resultset = [];
         try{
             $response = $this->client->request(
                 $this->getMethod(),
-                $this->url
+                $this->url,
+                $options
             );
             
             $resultSet = json_decode($response->getContent(), true);

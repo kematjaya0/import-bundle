@@ -21,13 +21,14 @@ class RemoteXmlDataSource extends RemoteDataSource
      * @return array
      * @throws Exception
      */
-    public function execute(): array 
+    public function execute(array $options = []): array 
     {
         $resultset = [];
         try{
             $response = $this->getClient()->request(
                 $this->getMethod(),
-                $this->getUrl()
+                $this->getUrl(),
+                $options
             );
             
             libxml_use_internal_errors(true);

@@ -21,12 +21,14 @@ class XmlDataSource extends SpreadSheetDataSource
      * @return array
      * @throws Exception
      */
-    public function execute(): array
+    public function execute(array $options = []): array
     {
         libxml_use_internal_errors(true);
         $result = simplexml_load_file($this->getFileName());
         if (!empty(libxml_get_errors())) {
-            throw new Exception(sprintf("invalid xml format from file: '%s'", $this->getFileName()));
+            throw new Exception(
+                sprintf("invalid xml format from file: '%s'", $this->getFileName())
+            );
         }
 
         return json_decode(json_encode($result), true);

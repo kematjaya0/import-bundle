@@ -55,7 +55,7 @@ class SpreadSheetDataSource extends AbstractDataSource
      * @return array
      * @throws Exception
      */
-    public function execute(): array 
+    public function execute(array $options = []): array 
     {
         try 
         {

@@ -23,5 +23,5 @@ interface ImportManagerInterface
      * @param  AbstractDataTransformer $transformer
      * @return Collection
      */
-    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer):Collection;
+    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = []):Collection;
 }

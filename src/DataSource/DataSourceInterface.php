@@ -11,5 +11,5 @@ interface DataSourceInterface
     
     public function keyToProcess():?string;
     
-    public function execute():array;
+    public function execute(array $options = []):array;
 }
