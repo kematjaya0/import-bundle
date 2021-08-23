@@ -61,11 +61,8 @@ class ImportManager implements ImportManagerInterface
      */
     public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = []): Collection 
     {
-        $entityManager = $this->getEntityManager();
-        $entityManager->beginTransaction();
         try{
             $data = $this->getSourceData($source, $options);
-            
             $start = $source->startReadedRow() ? $source->startReadedRow() : 0;
             $objects = new ArrayCollection();
             foreach ($data as $k => $value) {
@@ -78,17 +75,15 @@ class ImportManager implements ImportManagerInterface
                 }
                 
                 $entity = $transformer->fromArray($value);
-                $this->save($entity, $entityManager);
+                
+                $this->save($entity);
+                
                 $objects->add($entity);
             }
-            
-            $entityManager->flush();
-            $entityManager->commit();
             
             return $objects;
             
         } catch (Exception $ex) {
-            $entityManager->rollback();
             
             throw $ex;
         }
@@ -102,8 +97,9 @@ class ImportManager implements ImportManagerInterface
      * @param type                   $object
      * @param EntityManagerInterface $entityManager
      */
-    protected function save(&$object, EntityManagerInterface $entityManager)
+    protected function save(&$object)
     {
+        $entityManager = $this->getEntityManager();
         $entityManager->transactional(
             function (EntityManagerInterface $em) use ($object) {
             
