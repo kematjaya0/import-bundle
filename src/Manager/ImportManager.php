@@ -59,17 +59,22 @@ class ImportManager implements ImportManagerInterface
      * @return Collection 
      * @throws Exception
      */
-    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = []): Collection 
+    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = [], callable $validate = null): Collection 
     {
         try{
-            $data = $this->getSourceData($source, $options);
             $start = $source->startReadedRow() ? $source->startReadedRow() : 0;
+            
+            $data = array_slice(
+                $this->getSourceData($source, $options), 
+                $start
+            );
+            
+            if (is_callable($validate)) {
+                call_user_func($validate, $data, $transformer);
+            }
+            
             $objects = new ArrayCollection();
             foreach ($data as $k => $value) {
-                if ($k < $start) {
-                    continue;
-                }
-                
                 if ($this->isNull($value)) {
                     continue;
                 }

@@ -49,7 +49,7 @@ trait ImportControllerTrait
      * @return array
      * @throws \Exception
      */
-    protected function doSpreadsheetImport(FormInterface $form, Request $request, AbstractDataTransformer $transformer, string $fieldName = 'attachment'): array 
+    protected function doSpreadsheetImport(FormInterface $form, Request $request, AbstractDataTransformer $transformer, string $fieldName = 'attachment', callable $validator = null): array 
     {
         $form->handleRequest($request);
         if (!$form->isSubmitted()) {
@@ -69,7 +69,7 @@ trait ImportControllerTrait
 
         try {
 
-            return $this->processFile($file, $transformer);
+            return $this->processFile($file, $transformer, $validator);
         } catch (\Exception $ex) {
 
             return $this->buildImportErrorResult($ex->getMessage());
@@ -85,10 +85,10 @@ trait ImportControllerTrait
      * @param  AbstractDataTransformer $transformer
      * @return array
      */
-    protected function processFile(File $file, AbstractDataTransformer $transformer):array
+    protected function processFile(File $file, AbstractDataTransformer $transformer, callable $validator = null):array
     {
         $source = (new SpreadSheetDataSource($file->getRealPath()))->setReadedRow((int)$this->getParameter('spreadsheet.start_row'));
-        $resultsets = $this->importManager->process($source, $transformer);
+        $resultsets = $this->importManager->process($source, $transformer, [], $validator);
 
         return $this->buildImportSuccessResult($resultsets);
     }

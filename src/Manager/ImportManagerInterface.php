@@ -19,9 +19,11 @@ interface ImportManagerInterface
     /**
      * Function for processing data into database
      * 
-     * @param  AbstractDataSource      $source
-     * @param  AbstractDataTransformer $transformer
+     * @param AbstractDataSource $source
+     * @param AbstractDataTransformer $transformer
+     * @param array $options
+     * @param callable $validate
      * @return Collection
      */
-    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = []):Collection;
+    public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = [], callable $validate = null):Collection;
 }
