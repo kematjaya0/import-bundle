@@ -70,7 +70,7 @@ class ImportManager implements ImportManagerInterface
             );
             
             if (is_callable($validate)) {
-                call_user_func($validate, $data, $transformer);
+                $data = call_user_func($validate, $data, $transformer);
             }
             
             $objects = new ArrayCollection();
