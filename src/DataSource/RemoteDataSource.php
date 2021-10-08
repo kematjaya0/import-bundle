@@ -75,7 +75,6 @@ class RemoteDataSource extends AbstractDataSource
      */
     public function execute(array $options = []): array 
     {
-        $resultset = [];
         try{
             $response = $this->client->request(
                 $this->getMethod(),
@@ -83,14 +82,14 @@ class RemoteDataSource extends AbstractDataSource
                 $options
             );
             
-            $resultSet = json_decode($response->getContent(), true);
+            $rs = json_decode($response->getContent(), true);
             
-            return is_array($resultSet) ? $resultSet : [];
+            return is_array($rs) ? $rs : [];
         } catch (Exception $ex) {
             throw $ex;
         }
-            
-        return $resultset;
+        
+        return [];
     }
 
     /**
@@ -120,7 +119,5 @@ class RemoteDataSource extends AbstractDataSource
     {
         return $this->url;
     }
-
-
 
 }
