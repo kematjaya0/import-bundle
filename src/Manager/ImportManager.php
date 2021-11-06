@@ -61,6 +61,7 @@ class ImportManager implements ImportManagerInterface
      */
     public function process(AbstractDataSource $source, AbstractDataTransformer $transformer, array $options = [], callable $validate = null): Collection 
     {
+        $objects = new ArrayCollection();
         try{
             $start = $source->startReadedRow() ? $source->startReadedRow() : 0;
             
@@ -73,29 +74,39 @@ class ImportManager implements ImportManagerInterface
                 $data = call_user_func($validate, $data, $transformer);
             }
             
-            $objects = new ArrayCollection();
-            foreach ($data as $k => $value) {
-                if ($this->isNull($value)) {
+            foreach ($data as $value) {
+                $entity = $this->processRow($transformer, $value);
+                if (null === $entity) {
                     continue;
                 }
                 
-                $entity = $transformer->fromArray($value);
-                
-                $this->save($entity);
-                
                 $objects->add($entity);
             }
-            
-            return $objects;
             
         } catch (Exception $ex) {
             
             throw $ex;
         }
         
-        return new ArrayCollection();
+        return $objects;
     }
 
+    protected function processRow(AbstractDataTransformer $transformer, array $value = [])
+    {
+        if ($this->isNull($value)) {
+            return null;
+        }
+
+        $entity = $transformer->fromArray($value);
+        if (null === $entity) {
+            return null;
+        }
+
+        $this->save($entity);
+        
+        return $entity;
+    }
+    
     /**
      * Persisted data to database
      *
@@ -142,14 +153,15 @@ class ImportManager implements ImportManagerInterface
     {
         $resultSet = $source->execute($options);
         $data = $resultSet;
-        if ($source->keyToProcess()) {
-            if (!isset($resultSet[$source->keyToProcess()])) {
-                throw new KeyNotFoundException($source->keyToProcess());
-            }
-
-            $data = $resultSet[$source->keyToProcess()];
+        if (!$source->keyToProcess()) {
+            
+            return $data;
         }
         
-        return $data;
+        if (!isset($resultSet[$source->keyToProcess()])) {
+            throw new KeyNotFoundException($source->keyToProcess());
+        }
+
+        return $resultSet[$source->keyToProcess()];
     }
 }
