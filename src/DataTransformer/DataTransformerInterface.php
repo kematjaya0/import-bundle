@@ -23,6 +23,9 @@ interface DataTransformerInterface
     const KEY_FIELD           = 'field';
     const KEY_TYPE            = 'type';
     
+    
+    const TAG_NAME = 'kematjaya.data_transformer';
+    
     /**
      * Process from array to object
      * 
