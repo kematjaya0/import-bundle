@@ -34,7 +34,7 @@ trait ImportControllerTrait
      * @param  ImportManagerInterface $importManager
      * @return void
      */
-    protected function setImportManager(ImportManagerInterface $importManager):void
+    public function setImportManager(ImportManagerInterface $importManager):void
     {
         $this->importManager = $importManager;
     }
