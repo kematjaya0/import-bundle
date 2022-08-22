@@ -1,6 +1,7 @@
 {
     "name": "kematjaya/import-bundle",
     "type": "library",
+    "description": "import from phpspreadsheet data to database",
     "license": "MIT",
     "authors": [
         {
@@ -30,6 +31,7 @@
         "symfony/config": "^4.0|^5.0",
         "symfony/dependency-injection": "^4.0|^5.0",
         "symfony/filesystem": "^4.0|^5.0",
-        "phpoffice/phpspreadsheet": "^1.15"
+        "phpoffice/phpspreadsheet": "^1.15",
+        "symfony/form": "^5.4"
     }
 }
