@@ -91,7 +91,7 @@ trait ImportControllerTrait
         
         $source = (new SpreadSheetDataSource($file->getRealPath()))
                 ->setReadedRow((int)$this->getParameter('spreadsheet.start_row'));
-        $resultsets = $this->importManager->process(
+        $resultsets = $this->getImportManager()->process(
             $source, 
             $transformer, 
             ["formData" => $data], 
