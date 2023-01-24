@@ -6,3 +6,6 @@ services:
 
     Kematjaya\ImportBundle\Manager\ImportManagerInterface:
         class: Kematjaya\ImportBundle\Manager\ImportManager
+        
+    Kematjaya\ImportBundle\Builder\DataTransformerBuilderInterface:
+        class: Kematjaya\ImportBundle\Builder\DataTransformerBuilder

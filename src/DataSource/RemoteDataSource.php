@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file is part of Kematjaya\ImportBundle
+ */
+
 namespace Kematjaya\ImportBundle\DataSource;
 
 use Symfony\Component\HttpClient\CurlHttpClient;
@@ -7,7 +11,12 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Exception;
 
 /**
- * @author Nur Hidayatullah <kematjaya0@gmail.com>
+ * Processing from URL (json) to array data
+ * 
+ * @category Kematjaya\ImportBundle
+ * @package  Kematjaya\ImportBundle\Manager
+ * @license  https://opensource.org/licenses/MIT MIT
+ * @author   Nur Hidayatullah <kematjaya0@gmail.com>
  */
 class RemoteDataSource extends AbstractDataSource
 {
@@ -35,45 +44,80 @@ class RemoteDataSource extends AbstractDataSource
         $this->client = $client ? $client : new CurlHttpClient();
     }
 
-    function getMethod(): string 
+    /**
+     * Get request method
+     * 
+     * @return string
+     */
+    public function getMethod(): string 
     {
         return $this->method;
     }
 
-    function setMethod(string $method): self 
+    /**
+     * Set request method
+     * 
+     * @param  string $method
+     * @return self
+     */
+    public function setMethod(string $method): self 
     {
         $this->method = $method;
         
         return $this;
     }
-
-    public function execute(): array 
+    
+    /**
+     * Execution from remote source to array
+     * 
+     * @return array
+     * @throws Exception
+     */
+    public function execute(array $options = []): array 
     {
-        $resultset = [];
         try{
             $response = $this->client->request(
                 $this->getMethod(),
-                $this->url
+                $this->url,
+                $options
             );
             
-            return json_decode($response->getContent(), true);
+            $rs = json_decode($response->getContent(), true);
+            
+            return is_array($rs) ? $rs : [];
         } catch (Exception $ex) {
             throw $ex;
         }
-            
-        return $resultset;
+        
+        return [];
     }
 
-    function getClient(): HttpClientInterface 
+    /**
+     * Get HTTP Client object
+     * 
+     * @return HttpClientInterface
+     */
+    public function getClient(): HttpClientInterface 
     {
         return $this->client;
     }
 
-    function setClient(HttpClientInterface $client): self 
+    /**
+     * Set HTTP Client object
+     * 
+     * @param  HttpClientInterface $client
+     * @return self
+     */
+    public function setClient(HttpClientInterface $client): self 
     {
         $this->client = $client;
         
         return $this;
+    }
+    
+    function getUrl(): string 
+    {
+        return $this->url;
     }
 
 }

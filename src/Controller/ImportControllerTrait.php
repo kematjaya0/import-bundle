@@ -1,9 +1,5 @@
 <?php
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Scripting/PHPTrait.php to edit this template
- */
 
 namespace Kematjaya\ImportBundle\Controller;
 
@@ -128,7 +124,7 @@ trait ImportControllerTrait
         return [
             "process" => true, 
             "status" => true, 
-            "errors" => null, 
+            "errors" => null,
             "message" => sprintf('import successfull (%s data)', $resultsets->count())
         ];
     }

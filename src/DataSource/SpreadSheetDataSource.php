@@ -1,5 +1,9 @@
 <?php
 
+/**
+ * This file is part of Kematjaya\ImportBundle
+ */
+
 namespace Kematjaya\ImportBundle\DataSource;
 
 use Exception;
@@ -7,7 +11,12 @@ use Symfony\Component\Filesystem\Filesystem;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 /**
- * @author Nur Hidayatullah <kematjaya0@gmail.com>
+ * Processing from spreadsheet to array
+ * 
+ * @category Kematjaya\ImportBundle
+ * @package  Kematjaya\ImportBundle\Manager
+ * @license  https://opensource.org/licenses/MIT MIT
+ * @author   Nur Hidayatullah <kematjaya0@gmail.com>
  */
 class SpreadSheetDataSource extends AbstractDataSource
 {
@@ -27,10 +36,10 @@ class SpreadSheetDataSource extends AbstractDataSource
     {
         $fileSystem = new Filesystem();
         
-        if(!$fileSystem->exists($fileName)) 
-        {
+        if (!$fileSystem->exists($fileName)) {
             throw new Exception('file ' . $fileName .' not exist');
         }
+        
         $this->fileName = $fileName;
         $this->fileSystem = $fileSystem;
     }
@@ -40,7 +49,13 @@ class SpreadSheetDataSource extends AbstractDataSource
         return $this->fileName;
     }
     
-    public function execute(): array 
+    /**
+     * Execution from spreadsheet file source to array
+     * 
+     * @return array
+     * @throws Exception
+     */
+    public function execute(array $options = []): array 
     {
         try 
         {
