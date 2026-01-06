@@ -21,18 +21,18 @@
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
-        "symfony/var-dumper": "^4.0|^5.0",
+        "symfony/var-dumper": "^7.0",
         "phpstan/phpstan": "^0.12.64"
     },
     "require": {
         "doctrine/collections": "^1.6",
-        "doctrine/orm": "^2.7",
-        "symfony/http-client": "^4.0|^5.0",
-        "symfony/http-kernel": "^4.0|^5.0",
-        "symfony/config": "^4.0|^5.0",
-        "symfony/dependency-injection": "^4.0|^5.0",
-        "symfony/filesystem": "^4.0|^5.0",
+        "doctrine/orm": "^2.7|^3.6",
+        "symfony/http-client": "^7.0",
+        "symfony/http-kernel": "^7.0",
+        "symfony/config": "^7.0",
+        "symfony/dependency-injection": "^7.0",
+        "symfony/filesystem": "^7.0",
         "phpoffice/phpspreadsheet": "^1.15",
-        "symfony/form": "^5.4"
+        "symfony/form": "^7.0"
     }
 }

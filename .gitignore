@@ -6,7 +6,8 @@
 
 # Email spool folder
 /app/spool/*
-
+.idea
+composer.lock
 # Cache, session files and logs (Symfony3)
 /var/cache/*
 /var/logs/*
